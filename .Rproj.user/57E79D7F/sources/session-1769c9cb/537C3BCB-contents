@@ -1,0 +1,137 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+install.packages(c("readr", "dplyr", "tidyr", "tibble"))
+library(readr)
+library(dplyr)
+library(tidyr)
+library(tibble)
+```
+
+```{r}
+ruta_blast <- "data_raw/datos_sesion_02_blast/resultados_blast.tsv"
+ruta_conteos <- "data_raw/datos_sesion_03_dplyr/conteos_genes.csv"
+stopifnot(file.exists(ruta_blast), file.exists(ruta_conteos))
+
+blast <- read_tsv(ruta_blast, show_col_types = FALSE)
+conteos <- read_csv(ruta_conteos, show_col_types = FALSE)
+```
+
+```{r}
+# Con glimpse podemos ver un preview de los datos, es diferente de str en que este ultimo muestra la estructura interna del objeto
+glimpse(blast)
+glimpse(conteos)
+```
+
+
+Para poder tratar un objeto como algo especifo lo declaramos
+```{r}
+as.data.frame(blast)
+```
+
+
+
+```{r}
+datos <- read_csv(
+  "data_raw/expresion_genica_estres.csv",
+  show_col_types = FALSE
+)
+
+glimpse(datos)
+```
+
+
+1. Calcula el conteo promedio de cada gen en cada condición experimental.
+```{r}
+
+Promedio <- datos %>%
+  group_by(gene_id,condicion) %>%
+  summarise(
+    mean(conteo)
+  )
+
+Promedio
+glimpse(Promedio)
+```
+
+
+2. Organiza los resultados de manera que puedas comparar los promedios de Control y Estrés para cada gen.
+```{r}
+Comparar = datos %>%
+  group_by(gene_id, condicion) %>% 
+  summarise(
+    mean(conteo))
+
+Comparar
+glimpse(Comparar)
+```
+
+
+3. Calcula la razón entre el promedio en Estrés y el promedio en Control.
+```{r}
+Comparar$
+```
+
+
+4. Identifica los cinco genes con mayor aumento relativo y muestra su anotación funcional.
+
+
+Pregunta de interpretación: ¿Un gen con un aumento relativo grande necesariamente presenta un conteo alto de lecturas? Justifica tu respuesta.
+
+
+
+# 9 Integración de datos y automatización de análisis en R
+
+```{r}
+library(dplyr)
+library(readr)
+library(purrr)
+```
+
+
+```{r}
+carpeta_datos <- "data_raw/datos_sesion_04_integracion"
+carpeta_blast <- file.path(carpeta_datos, "blast_muestras")
+
+blast_A <- read_tsv(
+  file.path(carpeta_blast, "muestra_A.tsv"),
+  show_col_types = FALSE
+)
+
+metadata <- read_csv(
+  file.path(carpeta_datos, "metadata_secuencias.csv"),
+  col_types = cols(codigo_muestra = col_character(), .default = col_guess())
+)
+
+head(blast_A)
+```
+```{r}
+blast_A_metadata = blast_A %>%
+  left_join(metadata, by = "query_id")
+
+blast_A_metadata
+```
+
+```{r}
+blast_C <- read_tsv(
+  file.path(carpeta_blast, "muestra_C.tsv"),
+  show_col_types = FALSE
+)
+
+Blast_C_Metadata = blast_C %>%
+  inner_join(metadata, by = "query_id")
+Blast_C_Metadata
+```
+```{r}
+Blast_C_Metadata = blast_C %>%
+  anti_join(metadata, by = "query_id")
+Blast_C_Metadata
+```
+
+
+
+
+

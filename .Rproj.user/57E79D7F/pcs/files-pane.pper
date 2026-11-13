@@ -1,0 +1,13 @@
+{
+    "path": "~/Desktop/Bioinformática I/Intro_a_R/data_raw/datos_sesion_04_integracion/blast_muestras",
+    "sortOrder": [
+        {
+            "columnIndex": 1,
+            "ascending": true
+        },
+        {
+            "columnIndex": 2,
+            "ascending": true
+        }
+    ]
+}

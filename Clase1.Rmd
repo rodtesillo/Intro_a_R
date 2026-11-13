@@ -1,0 +1,29 @@
+---
+title: "Introducción a R y organización de proyectos bioinformáticos"
+output: html_notebook
+---
+
+En bioinformatica es necesario hacer un uso etico y responsable de los datos sensibles. 
+
+R studio es un entrono de desarrollo integrado (IDE) para R. 
+
+```{r}
+# Directorio de trabajo
+getwd()
+```
+
+Bioconductor es un repositorio de paquetes diseñado para analisis de datos genomicos. 
+```{r}
+install.packages("BiocManager")
+```
+
+Para remover paquetes podemos usar el siguinete comando 
+```{r}
+remove.packages("package-to-remove")
+```
+
+
+
+
+
+

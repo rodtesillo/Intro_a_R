@@ -1,0 +1,64 @@
+rm(list = ls())
+
+install.packages(c("readr", "dplyr", "tidyr", "tibble"))
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(tibble)
+
+ruta_blast <- "data_raw/datos_sesion_02_blast/resultados_blast.tsv"
+ruta_conteos <- "data_raw/datos_sesion_03_dplyr/conteos_genes.csv"
+stopifnot(file.exists(ruta_blast), file.exists(ruta_conteos))
+
+blast <- read_tsv(ruta_blast, show_col_types = FALSE)
+conteos <- read_csv(ruta_conteos, show_col_types = FALSE)
+
+glimpse(conteos)
+class(blast)
+
+class(as.data.frame(blast))
+
+
+blast %>%
+  select(-evalue)
+
+
+# & Funciona como "y" para filtrar y | como "o"
+
+blast %>%
+  filter(pident >= 90, length >= 150)
+
+blast %>%
+  arrange(query_id, desc(bitscore))
+
+blast %>%
+  rename(
+    PorcentajeDeIdentidad = pident
+  )
+
+blast %>%
+  distinct(query_id, subject_id)
+
+blast %>%
+  mutate(proporcionIdentidad = pident/100, 
+         longitud_kb = length/1000) %>%
+           select(proporcionIdentidad, longitud_kb)
+
+conteos_largos = conteos %>%
+  pivot_longer(
+    cols = starts_with("muestra"),
+    names_to = "muestra",
+    values_to = "conteos"
+  )
+
+
+conteos_recuperados = conteos_largos %>%
+  pivot_wider(
+    names_from = "muestra",
+    values_from = "conteos"
+  )
+
+
+resumen1 
+
