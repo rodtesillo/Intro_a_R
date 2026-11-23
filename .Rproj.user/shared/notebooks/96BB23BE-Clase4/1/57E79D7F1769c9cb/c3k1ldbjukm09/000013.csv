@@ -1,8 +1,0 @@
-"0","blast_C <- read_tsv("
-"0","  file.path(carpeta_blast, ""muestra_C.tsv""),"
-"0","  show_col_types = FALSE"
-"0",")"
-"0",""
-"0","Blast_C_Metadata = blast_C %>%"
-"0","  inner_join(metadata, by = ""query_id"")"
-"0","Blast_C_Metadata"

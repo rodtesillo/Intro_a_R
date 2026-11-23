@@ -3,17 +3,184 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
 ```{r}
-plot(cars)
+rm(list = ls())
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+```{r}
+library(dplyr)
+library(readr)
+library(purrr)
+```
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+carpeta_datos <- "data_raw/datos_sesion_04_integracion"
+carpeta_blast <- file.path(carpeta_datos, "blast_muestras")
+
+
+blast_A <- read_tsv(
+  file.path(carpeta_blast, "muestra_A.tsv"),
+  show_col_types = FALSE
+)
+blast_B <- read_tsv(
+  file.path(carpeta_blast, "muestra_B.tsv"),
+  show_col_types = FALSE
+)
+blast_C <- read_tsv(
+  file.path(carpeta_blast, "muestra_C.tsv"),
+  show_col_types = FALSE
+)
+
+metadata <- read_csv(
+  file.path(carpeta_datos, "metadata_secuencias.csv"),
+  col_types = cols(codigo_muestra = col_character(), .default = col_guess())
+)
+
+```
+
+```{r}
+blast_total <- bind_rows(
+  muestra_A = blast_A,
+  muestra_B = blast_B,
+  muestra_C = blast_C,
+  .id = "muestra"
+)
+
+blast_total
+```
+
+
+```{r}
+conteos_riz <- read_tsv("data_raw/datos_rizosfera/conteos_taxonomia_rizosfera.tsv",
+  show_col_types = FALSE)
+
+metadata_riz <- read_csv("data_raw/datos_rizosfera/metadata_rizosfera.csv",
+  show_col_types = FALSE)
+```
+
+```{r}
+niveles <- c(
+  "kingdom", "phylum", "class", "order",
+  "family", "genus", "species"
+)
+
+conteos_limpios <- conteos_riz %>%
+  mutate(
+    across(
+      all_of(niveles),
+      ~ na_if(sub("^[a-z]__", "", .x), "")
+    )
+  )
+
+conteos_limpios %>%
+  select(taxon_id, all_of(niveles)) %>%
+  head()
+```
+
+```{r}
+ids_muestras <- metadata_riz$sample_id
+
+conteos_largos <- conteos_limpios %>%
+  pivot_longer(
+    cols = all_of(ids_muestras),
+    names_to = "sample_id",
+    values_to = "conteo"
+  )
+
+datos_riz <- conteos_largos %>%
+  left_join(
+    metadata_riz %>% select(sample_id, host_name, country, year),
+    by = "sample_id",
+    relationship = "many-to-one"
+  )
+
+glimpse(datos_riz)
+```
+
+```{r}
+totales_muestra <- datos_riz %>%
+  group_by(sample_id) %>%
+  summarise(total_lecturas = sum(conteo), .groups = "drop")
+
+stopifnot(all(totales_muestra$total_lecturas > 0))
+head(totales_muestra)
+```
+
+
+```{r}
+preparar_abundancias <- function(tabla, nivel = "genus", umbral = 0.05) {
+  niveles_validos <- c(
+    "kingdom", "phylum", "class", "order",
+    "family", "genus", "species"
+  )
+
+  stopifnot(
+    nivel %in% niveles_validos,
+    is.numeric(umbral), length(umbral) == 1,
+    !is.na(umbral), umbral >= 0, umbral <= 1
+  )
+  
+  etiqueta_otros <- if (nivel == "phylum") {
+    "Filos < 5%"
+  } else if (nivel == "genus") {
+    "Géneros < 5%"
+  } else {
+    "Taxones < 5%"
+  }
+
+  tabla %>%
+    mutate(
+      taxon = .data[[nivel]],
+      taxon = if_else(is.na(taxon) | taxon == "",
+                      "Sin clasificar", taxon)
+    ) %>%
+    group_by(sample_id, host_name, taxon) %>%
+    summarise(conteo = sum(conteo), .groups = "drop") %>%
+    group_by(sample_id) %>%
+    mutate(abundancia_relativa = conteo / sum(conteo)) %>%
+    ungroup() %>%
+    mutate(
+      taxon_final = if_else(
+        abundancia_relativa < umbral,
+        etiqueta_otros,
+        taxon
+      )
+    ) %>%
+    group_by(sample_id, host_name, taxon_final) %>%
+    summarise(
+      abundancia_relativa = sum(abundancia_relativa),
+      .groups = "drop"
+    )
+}
+```
+
+
+```{r}
+filo_5 = preparar_abundancias(datos_riz, "phylum")
+View(filo_5)
+genus_5 = preparar_abundancias(datos_riz, "genus")
+View(genus_5)
+
+
+write_tsv(filo_5, "results")
+write_tsv(genus_5, "results")
+```
+
+
+Construcción y exploración visual de datos bioinformáticos con ggplot2
+
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+profundidad = totales_muestra %>%
+  left_join(metadata %>% 
+              select(sample_id, host_name, country, crop_system),
+            by 
+            
+              )
+```
 

@@ -1,0 +1,67 @@
+---
+title: "Composición microbiana de la rizosfera"
+author: "Nombre del estudiante"
+date: today
+lang: es
+format:
+  html:
+    toc: true
+    code-fold: true
+execute:
+  warning: false
+  message: false
+---
+
+# Introducción
+
+Este reporte analiza la **composición taxonómica** de muestras de rizosfera.
+
+## Pregunta de investigación
+
+¿Observamos diferencias entre las *plantas hospederas*?
+
+- Primer objetivo.
+- Segundo objetivo.
+
+[Documentación de Quarto](https://quarto.org/docs/)
+
+```{r}
+#| eval: false
+#| label: fig-ejemplo
+#| fig-cap: "Ejemplo de una figura generada desde R"
+
+plot(1:5, (1:5)^2, pch = 19)
+```
+
+```{r}
+#| label: setup
+#| include: false
+#| message: false
+#| warning: false
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(paletteer)
+library(kableExtra)
+
+metadata_riz <- read_csv("data_raw/datos_rizosfera/metadata_rizosfera.csv")
+totales_muestra <- read_tsv("results/totales_muestra.tsv")
+generos_5 <- read_tsv("results/generos_5.tsv")
+filos_5 <- read_tsv("results/filos_5.tsv")
+```
+
+```{r}
+#| label: tbl-muestras-r
+
+resumen_hospederos <- metadata_riz %>%
+  count(host_name, name = "numero_muestras") %>%
+  arrange(desc(numero_muestras))
+
+knitr::kable(
+  resumen_hospederos,
+  col.names = c("Planta hospedera", "Número de muestras"),
+  caption = "Número de muestras por planta hospedera"
+)
+```

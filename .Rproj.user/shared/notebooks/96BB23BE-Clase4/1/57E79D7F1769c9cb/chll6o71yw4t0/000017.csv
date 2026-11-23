@@ -1,8 +1,0 @@
-"0",""
-"0","Promedio <- datos %>%"
-"0","  group_by(gene_id,condicion) %>%"
-"0","  summarise("
-"0","    mean(conteo)"
-"0","  )"
-"0",""
-"0","Promedio"

@@ -1,0 +1,116 @@
+---
+title: "Tema 3"
+format: html
+editor: visual
+---
+
+Limpiar entorno
+
+```{r}
+rm(list = ls())
+```
+
+Descargar paquetes a ocupar
+
+```{r}
+library(readr)
+library(dplyr)
+library(dplyr)
+library(tidyr)
+library(tibble)
+```
+
+Cargar archivo
+
+```{r}
+expresion_genica_estres.csv = read_csv("data_raw/expresion_genica_estres.csv", show_col_types = FALSE)
+```
+
+## Ejercicio 1
+
+#### Calcula el conteo promedio de cada gen en cada condición experimental
+
+```{r}
+PromedioEstres = expresion_genica_estres.csv %>%
+  group_by(gene_id, condicion) %>%
+  summarise(
+    Promedio_por_condicion = mean(conteo),
+    .groups = "drop_last"
+  )
+head(PromedioEstres)
+```
+
+#### Organiza los resultados de manera que puedas comparar los promedios de Control y Estrés para cada gen
+
+```{r}
+PromedioEstresAncho = PromedioEstres %>%
+  pivot_wider(
+    names_from = condicion,
+    values_from = Promedio_por_condicion
+  )
+
+head(PromedioEstresAncho)
+```
+
+#### Calcula la razón entre el promedio en Estrés y el promedio en Control
+
+```{r}
+PromedioEstresAncho = PromedioEstresAncho %>%
+  mutate(Razon = Estres/Control)
+PromedioEstresAncho
+```
+
+#### Identifica los cinco genes con mayor aumento relativo y muestra su anotación funcional
+
+```{r}
+PromedioEstresAncho %>% 
+  arrange(desc(Razon)) %>%
+  head(PromedioEstresAncho, n = 5)
+```
+
+#### **Pregunta de interpretación**
+
+¿Un gen con un aumento relativo grande necesariamente presenta un conteo alto de lecturas?
+
+No, un aumento relativo alto no implica necesariamente un conteo absoluto elevado de lecturas
+
+## Ejercicio 2
+
+#### Calcula el conteo promedio de cada gen considerando todas las muestras.
+
+```{r}
+PromedioTodasLasMuestras = expresion_genica_estres.csv %>%
+  group_by(gene_id, funcion) %>%
+  summarise(
+    Conteo_Promedio = mean(conteo),
+    .groups = "drop"
+  )
+
+PromedioTodasLasMuestras
+```
+
+#### Identifica los 15 genes con mayor conteo promedio.
+
+```{r}
+Mayor_Promedio = PromedioTodasLasMuestras %>%
+  arrange(desc(Conteo_Promedio))
+
+head(Mayor_Promedio, n = 15)
+```
+
+#### Determina cuántos de esos genes pertenecen a cada categoría funcional y ordena las categorías funcionales de mayor a menor frecuencia
+
+```{r}
+frecuencia_categorias <- Mayor_Promedio |>
+  count(funcion, name = "n_genes") |>
+  arrange(desc(n_genes))
+
+Mayor_Promedio
+frecuencia_categorias
+```
+
+#### **Pregunta de interpretación:**
+
+¿La categoría funcional más frecuente entre estos 15 genes necesariamente es la más importante para la bacteria?
+
+No necesariamente, ya que esta frecuencia puede estar determinada por otros factores, que si bien pueden estar correlacionados no significa que sean dependientes de la importancia

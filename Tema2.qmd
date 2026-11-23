@@ -1,0 +1,200 @@
+---
+title: "Tema 2"
+format: html
+editor: visual
+---
+
+Limpiar entorno
+
+```{r}
+rm(list = ls())
+```
+
+## Ejercicio 1
+
+Sin abrirlo en una hoja de cálculo, utiliza R para comprobar que existe `blast_separador_incorrecto.csv`, mostrar sus tres primeras líneas y determinar qué separador utiliza realmente.
+
+```{r}
+# Comprobar que existe
+file.exists("data_raw/datos_sesion_02_blast/blast_separador_incorrecto.csv")
+```
+
+```{r}
+# Observar sus primeras 3 lineas
+readLines("data_raw/datos_sesion_02_blast/blast_separador_incorrecto.csv", n = 3)
+```
+
+Se puede observar que usa separadores de tabuladores, lo que no coincide con su nombre, puesto que deberia llamarse .tsv
+
+## Ejercicio 2
+
+Importa `metadata_secuencias.csv` y `blast_comentarios.tsv` utilizando `readr`. Conserva `codigo_muestra` como texto. Comprueba la clase de cada objeto y muestra sus primeras filas
+
+```{r}
+# Cargar libreria
+library(readr)
+# Importar tibbles
+metadata_secuencias.csv = read_csv("data_raw/datos_sesion_02_blast/metadata_secuencias.csv", show_col_types = FALSE)
+blast_comentarios.tsv = read_tsv("data_raw/datos_sesion_02_blast/blast_comentarios.tsv", show_col_types = FALSE)
+```
+
+Comprobar clases de los dos tibbles
+
+```{r}
+class(metadata_secuencias.csv)
+class(blast_comentarios.tsv)
+```
+
+Mostrar las primeras filas de cada uno
+
+```{r}
+head(metadata_secuencias.csv)
+```
+
+```{r}
+head(blast_comentarios.tsv)
+```
+
+## Ejercicio 3
+
+Con `resultados_blast.tsv`, responde mediante código:
+
+```{r}
+# Importar resultados_blast.tsv
+resultados_blast.tsv = read_tsv("data_raw/datos_sesion_02_blast/resultados_blast.tsv", show_col_types = FALSE)
+```
+
+¿Cuántos registros y columnas tiene la tabla?
+
+Numero de registros:
+
+```{r}
+nrow(resultados_blast.tsv)
+```
+
+Número de registros:
+
+```{r}
+ncol(resultados_blast.tsv)
+```
+
+¿Cuántos `query_id` diferentes aparecen?
+
+```{r}
+length(unique(resultados_blast.tsv$query_id))
+```
+
+¿Cuántos resultados tiene cada consulta?
+
+```{r}
+table(resultados_blast.tsv$query_id)
+```
+
+¿Qué filas tienen `pident` mayor o igual a 95?
+
+```{r}
+resultados_blast.tsv[resultados_blast.tsv$pident >= 95, ]
+```
+
+¿Hay valores faltantes?
+
+```{r}
+table(is.na(resultados_blast.tsv))
+```
+
+## Ejercicio 4
+
+Un estudiante importa `blast_separador_incorrecto.csv` con `read_csv()` y obtiene una sola columna. ¿Significa que el archivo contiene una única variable? Explica cómo comprobarlo y corrige la importación.
+
+```{r}
+# Leer lineas para ver su separador
+readLines("data_raw/datos_sesion_02_blast/blast_separador_incorrecto.csv", n = 5)
+```
+
+El problema esta en que a pesar de que el archivo tiene terminación .csv, este no esta separado por comas, sino por tabuladores, por lo que lo correcto seria que se llamase `blast_separador_incorrecto.tsv` , dado que no cambiaremos el nombre, simplemte se leera como .tsv
+
+```{r}
+blast_separador_incorrecto.tsv = read_tsv("data_raw/datos_sesion_02_blast/blast_separador_incorrecto.csv", show_col_types = FALSE)
+blast_separador_incorrecto.tsv
+```
+
+## Ejercicio 5
+
+Utiliza `readLines()` y `grep()` para identificar los encabezados de `secuencias.fasta`. ¿Cuántas entradas FASTA contiene el archivo? Muestra únicamente sus encabezados
+
+```{r}
+Lineas = readLines("data_raw/datos_sesion_02_blast/secuencias.fasta")
+Encabezados = grep("^>", Lineas)
+length(Encabezados)
+```
+
+## Ejercicio 6
+
+Comprobar que existen `resultados_blast.tsv`, `metadata_secuencias.csv` y `secuencias.fasta`.
+
+```{r}
+file.exists("data_raw/datos_sesion_02_blast/resultados_blast.tsv")
+file.exists("data_raw/datos_sesion_02_blast/metadata_secuencias.csv")
+file.exists("data_raw/datos_sesion_02_blast/secuencias.fasta")
+```
+
+Importar las dos tablas con `readr` y conservar `codigo_muestra` como texto.
+
+```{r}
+metadata_secuencias.csv = read.csv("data_raw/datos_sesion_02_blast/metadata_secuencias.csv",
+                                   colClasses = c(codigo_muestra = "character"))
+resultados_blast.tsv = read_tsv("data_raw/datos_sesion_02_blast/resultados_blast.tsv", show_col_types = FALSE)
+```
+
+Mostrar dimensiones, nombres y tipos de columnas.
+
+```{r}
+# Para metadata_secuencias.csv
+dplyr::glimpse(metadata_secuencias.csv)
+```
+
+```{r}
+# Para resultados_blast.tsv
+dplyr::glimpse(resultados_blast.tsv)
+```
+
+Identificar los `query_id` distintos y contar los resultados por consulta.
+
+```{r}
+# Para metadata_secuencias.csv
+length(unique(metadata_secuencias.csv$query_id))
+```
+
+```{r}
+# Para resultados_blast.tsv
+length(unique(resultados_blast.tsv$query_id))
+```
+
+Mostrar las filas con `pident >= 90` y explicar qué representa este filtro.
+
+```{r}
+# Para resultados_blast.tsv
+resultados_blast.tsv[resultados_blast.tsv$pident >= 90,]
+```
+
+Este resultado se puede interptetar como las secuencias que contienen un porcentaje de identidad mayor al 90% respecto a la secuencia que se dio
+
+Leer el FASTA e indicar cuántos encabezados contiene.
+
+```{r}
+Lineas = readLines("data_raw/datos_sesion_02_blast/secuencias.fasta")
+Encabezados = grep("^>", Lineas)
+length(Encabezados)
+```
+
+Mostrar si alguna de las tablas tiene valores faltantes
+
+```{r}
+# Para metadata_secuencias.csv
+table(is.na(metadata_secuencias.csv))
+```
+
+```{r}
+# Para resultados_blast.tsv
+table(is.na(resultados_blast.tsv))
+```
