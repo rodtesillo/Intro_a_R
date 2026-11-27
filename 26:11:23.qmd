@@ -65,3 +65,101 @@ knitr::kable(
   caption = "Número de muestras por planta hospedera"
 )
 ```
+
+```{r}
+resumen_hospederos <- metadata_riz %>%
+  count(host_name, name = "numero_muestras") %>%
+  arrange(desc(numero_muestras))
+
+knitr::kable(resumen_hospederos)
+```
+
+```{r}
+#| label: tbl-hospederos
+#| tbl-cap: "Número de muestras por planta hospedera"
+
+knitr::kable(
+  resumen_hospederos,
+  col.names = c("Planta hospedera", "Número de muestras")
+)
+```
+
+```{r}
+knitr::kable(
+  head(resumen_hospederos, 10),
+  col.names = c("Planta hospedera", "Número de muestras"),
+  caption = "Primeras diez plantas según el número de muestras"
+)
+```
+
+```{r}
+#| label: fig-profundidad
+#| fig-cap: "Total de lecturas por muestra, según planta hospedera"
+#| fig-width: 10
+#| fig-height: 5
+
+profundidad <- totales_muestra %>%
+  left_join(
+    metadata_riz %>% select(sample_id, host_name),
+    by = "sample_id"
+  )
+
+ggplot(profundidad, aes(x = host_name, y = total_lecturas)) +
+  geom_boxplot(fill = "#5A9A91", alpha = 0.8) +
+  coord_flip() +
+  labs(
+    x = "Planta hospedera",
+    y = "Total de lecturas",
+    title = "Profundidad de lectura por planta"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: fig-filos
+#| fig-cap: "Composición taxonómica por filo en muestras de rizosfera"
+#| fig-width: 11
+#| fig-height: 5
+
+orden_filos <- c(
+  sort(setdiff(unique(filos_5$taxon_final), "Filos < 5%")),
+  "Filos < 5%"
+)
+
+
+colores <- as.character(
+  paletteer::paletteer_d("colorBlindness::Blue2Orange8Steps")
+)
+
+colores <- c(colores[1:7], "#999999")
+
+filos_grafica <- filos_5 %>%
+  left_join(
+    metadata_riz %>% select(sample_id, host_name),
+    by = "sample_id",
+    suffix = c("", "_metadata")
+  )
+
+# Si la tabla ya incluía host_name, conservar esa columna.
+if ("host_name_metadata" %in% names(filos_grafica)) {
+  filos_grafica <- filos_grafica %>%
+    mutate(host_name = coalesce(host_name, host_name_metadata)) %>%
+    select(-host_name_metadata)
+}
+
+ggplot(
+  filos_grafica,
+  aes(x = sample_id, y = abundancia_relativa, fill = taxon_final)
+) +
+  geom_col() +
+  scale_fill_manual(values = colores,
+                    breaks = orden_filos) +
+  facet_wrap(~ host_name, scales = "free_x") +
+  scale_y_continuous(labels = scales::label_percent()) +
+  labs(
+    x = "Muestra", y = "Abundancia relativa", fill = "Filo",
+    title = "Composición taxonómica de la rizosfera"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6))
+```
