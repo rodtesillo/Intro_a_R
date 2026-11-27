@@ -39,9 +39,9 @@ Descarga y descomprime [datos_A.zip](https://github.com/CursosENESJuriquilla/Int
 ```{r}
 library(readr)
 
-conteos_genero_miel_bacterias = read_tsv("datos_A/conteos_genero_miel_bacterias.tsv", show_col_types = FALSE)
+conteos_genero_miel_bacterias = read_tsv("Examen/datos_A/conteos_genero_miel_bacterias.tsv", show_col_types = FALSE)
 
-metadata_miel_examen = read_csv("datos_A/metadata_miel_examen.csv", show_col_types = FALSE)
+metadata_miel_examen = read_csv("Examen/datos_A/metadata_miel_examen.csv", show_col_types = FALSE)
 ```
 
 - Indica las dimensiones de ambas tablas y el número de muestras por especie de abeja.
